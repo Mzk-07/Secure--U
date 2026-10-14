@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>SecureU - Student Safety & Wellbeing</title>
+<meta name="description" content="SecureU helps college students access safety resources, emergency contacts, and wellbeing check-ins - even when offline.">
+
+<!-- Social share preview -->
+<meta property="og:title" content="SecureU - Student Safety & Wellbeing">
+<meta property="og:description" content="Emergency contacts, panic mode, safety guide and wellbeing check-ins for students - works offline.">
+<meta property="og:image" content="icons/icon-512.png">
+<meta property="og:type" content="website">
+
+<!-- PWA setup -->
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#4B2AAD">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="icon" href="icons/favicon-32.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="SecureU">
+
+<link rel="stylesheet" href="style.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<!-- ======================= OFFLINE MESSAGE BAR ======================= -->
+<div id="offlineBar">You are offline. Don't worry, SecureU still works!</div>
+
+<!-- ======================= LOGIN / SIGN UP SCREEN ======================= -->
+<div id="authSection">
+  <div class="auth-box">
+    <h1>SecureU</h1>
+    <p class="tagline">Student Safety &amp; Wellbeing App</p>
+
+    <!-- Buttons to switch between Login and Sign Up -->
+    <div class="auth-switch">
+      <button id="showLoginBtn" class="switchBtn active" onclick="showLoginForm()">Login</button>
+      <button id="showSignupBtn" class="switchBtn" onclick="showSignupForm()">Sign Up</button>
+    </div>
+
+    <p id="authError" class="error-text"></p>
+
+    <!-- LOGIN FORM -->
+    <div id="loginForm">
+      <label for="liEmail">Gmail address</label>
+      <input type="email" id="liEmail" placeholder="you@gmail.com">
+
+      <label for="liPassword">Password</label>
+      <input type="password" id="liPassword" placeholder="Enter password">
+
+      <button class="mainBtn" onclick="login()">Login</button>
+    </div>
+
+    <!-- SIGN UP FORM -->
+    <div id="signupForm" style="display:none;">
+      <label for="suName">Full name</label>
+      <input type="text" id="suName" placeholder="Your name">
+
+      <label for="suEmail">Gmail address</label>
+      <input type="email" id="suEmail" placeholder="you@gmail.com">
+      <small>Only Gmail addresses (@gmail.com) are accepted.</small>
+
+      <label for="suPassword">Create password</label>
+      <input type="password" id="suPassword" placeholder="Create a password">
+
+      <button class="mainBtn" onclick="signup()">Create Account</button>
+    </div>
+  </div>
+</div>
+
+<!-- ======================= MAIN APP (hidden until login) ======================= -->
+<div id="mainApp" style="display:none;">
+
+  <!-- TOP BAR -->
+  <header class="topbar">
+    <div class="brand">
+      <img src="icons/icon-192.png" alt="SecureU logo" class="logoImg">
+      <span id="navBrand">SecureU</span>
+    </div>
+    <div class="topbar-right">
+      <select id="langSelect" onchange="setLanguage(this.value)">
+        <option value="en">English</option>
+        <option value="hi">हिंदी</option>
+        <option value="kn">ಕನ್ನಡ</option>
+      </select>
+      <button class="iconBtn" onclick="toggleDarkMode()" title="Toggle dark mode" aria-label="Toggle dark mode">🌙</button>
+      <button class="iconBtn" onclick="logout()" title="Logout">Logout</button>
+    </div>
+  </header>
+
+  <!-- NAVIGATION MENU -->
+  <nav class="navbar">
+    <button class="navBtn" onclick="showPage('page-home')" id="navHomeBtn">🏠 <span id="navHome">Home</span></button>
+    <button class="navBtn" onclick="showPage('page-contacts')" id="navContactsBtn"><span>📞 <span id="navContacts">Contacts</span></span></button>
+    <button class="navBtn" onclick="showPage('page-guide')" id="navGuideBtn">📘 <span id="navGuide">Safety Guide</span></button>
+    <button class="navBtn" onclick="showPage('page-checkin')" id="navCheckinBtn">💙 <span id="navCheckin">Check-in</span></button>
+    <button class="navBtn" onclick="showPage('page-report')" id="navReportBtn">🚩 <span id="navReport">Report</span></button>
+    <button class="navBtn" onclick="showPage('page-feedback')" id="navFbBtn">✉️ <span id="navFb">Feedback</span></button>
+    <button class="navBtn" onclick="showPage('page-analytics')" id="navAnBtn">📊 <span id="navAn">Insights</span></button>
+    <button class="navBtn" onclick="showPage('page-profile')" id="navPrBtn">👤 <span id="navPr">Profile</span></button>
+    <button class="navBtn campusNavBtn" onclick="showPage('page-campus')">🏫 <span>Campus</span></button>
+    <button class="navBtn" onclick="showPage('page-seniors')">📚 <span>Senior Hub</span></button>
+    <button class="navBtn" onclick="showPage('page-new-student')">🧑‍🎓 <span>First Year</span></button>
+    <button class="navBtn" onclick="showPage('page-attendance')">📅 <span>Attendance</span></button>
+    <button class="navBtn sosNavBtn" onclick="showPanic()">🆘 SOS</button>
+  </nav>
+
+  <main class="content">
+
+    <!-- ================= HOME PAGE ================= -->
+    <div id="page-home" class="page">
+      <div class="hero fade-in">
+        <h2 id="heroGreeting">Hello!</h2>
+        <p id="heroTitle">You're a tap away from help.</p>
+        <div class="stat-row">
+          <div class="stat-box"><strong id="statCheckins">0</strong><span>Check-ins</span></div>
+          <div class="stat-box"><strong id="statReports">0</strong><span>Reports</span></div>
+          <div class="stat-box"><strong id="statStreak">0</strong><span>Day streak</span></div>
+        </div>
+      </div>
+
+      <h3 class="sectionTitle">Quick Access</h3>
+      <div class="cardGrid fade-in">
+        <div class="quickCard" onclick="showPage('page-contacts')"><span class="qIcon chip-1">📞</span><strong>Emergency Contacts</strong></div>
+        <div class="quickCard" onclick="showPage('page-guide')"><span class="qIcon chip-2">📘</span><strong>Safety Guide</strong></div>
+        <div class="quickCard" onclick="showPage('page-checkin')"><span class="qIcon chip-3">💙</span><strong>Wellbeing Check-in</strong></div>
+        <div class="quickCard" onclick="showPage('page-report')"><span class="qIcon chip-1">🚩</span><strong>Report an Issue</strong></div>
+        <div class="quickCard" onclick="showPanic()"><span class="qIcon chip-4">🆘</span><strong>Panic Mode</strong></div>
+        <div class="quickCard" onclick="showPage('page-feedback')"><span class="qIcon chip-2">✉️</span><strong>Anonymous Feedback</strong></div>
+        <div class="quickCard" onclick="showPage('page-analytics')"><span class="qIcon chip-3">📊</span><strong>My Insights</strong></div>
+        <div class="quickCard" onclick="shareRoute()"><span class="qIcon chip-1">🧭</span><strong>Share My Route</strong></div>
+        <div class="quickCard" onclick="showPage('page-campus')"><span class="qIcon chip-2">🏫</span><strong>Campus Navigator</strong></div>
+        <div class="quickCard" onclick="showPage('page-seniors')"><span class="qIcon chip-3">📚</span><strong>Senior Hub</strong></div>
+        <div class="quickCard" onclick="showPage('page-new-student')"><span class="qIcon chip-1">🧑‍🎓</span><strong>First Year</strong></div>
+      </div>
+
+      <h3 class="sectionTitle">About SecureU</h3>
+      <div class="card">
+        <p>SecureU gives students one place to get safety help and track their wellbeing - built to keep working even when internet is weak or unavailable, since that's exactly when it matters most.</p>
+        <p class="mt-1">All data you enter (check-ins, reports, profile) is stored only on this device. Nothing is uploaded anywhere unless you set up the optional email notification described in the project README.</p>
+      </div>
+    </div>
+
+    <!-- ================= EMERGENCY CONTACTS ================= -->
+    <div id="page-contacts" class="page" style="display:none;">
+      <h2>Emergency Contacts</h2>
+      <p class="pageDesc">Tap Call to dial instantly.</p>
+      <div id="contactsList"></div>
+    </div>
+
+    <!-- ================= SAFETY GUIDE ================= -->
+    <div id="page-guide" class="page" style="display:none;">
+      <h2>Offline Safety Guide</h2>
+      <p class="pageDesc">This guide works even without internet.</p>
+      <input type="text" id="guideSearch" placeholder="Search the guide (e.g. fire, bleeding, ragging)" onkeyup="renderGuide()">
+      <div id="guideList"></div>
+    </div>
+
+    <!-- ================= WELLBEING CHECK-IN ================= -->
+    <div id="page-checkin" class="page" style="display:none;">
+      <h2>Wellbeing Check-in</h2>
+      <p class="pageDesc">How are you feeling today?</p>
+
+      <div class="card">
+        <div class="moodRow">
+          <button class="moodBtn" onclick="selectMood('Happy', this)">😊<br>Happy</button>
+          <button class="moodBtn" onclick="selectMood('Calm', this)">😌<br>Calm</button>
+          <button class="moodBtn" onclick="selectMood('Stressed', this)">😖<br>Stressed</button>
+          <button class="moodBtn" onclick="selectMood('Sad', this)">😢<br>Sad</button>
+          <button class="moodBtn" onclick="selectMood('Anxious', this)">😰<br>Anxious</button>
+        </div>
+        <label for="moodNote">Private note (optional)</label>
+        <textarea id="moodNote" placeholder="Only you can see this..."></textarea>
+        <button class="mainBtn" onclick="submitCheckin()">Save Check-in</button>
+      </div>
+
+      <h3 class="sectionTitle">Recent History</h3>
+      <div id="moodHistoryList" class="card"></div>
+    </div>
+
+    <!-- ================= REPORT AN ISSUE ================= -->
+    <div id="page-report" class="page" style="display:none;">
+      <h2>Report an Issue</h2>
+      <p class="pageDesc">Tied to your account, so you can track it under "My Reports." Saved on this device, even if you are offline. Prefer to stay unnamed? Use <a href="#" onclick="showPage('page-feedback'); return false;">Anonymous Feedback</a> instead.</p>
+
+      <div class="tabRow">
+        <button class="tabBtn active" onclick="showTab('report', 'new', event)">New Report</button>
+        <button class="tabBtn" onclick="showTab('report', 'mine', event)">My Reports</button>
+      </div>
+
+      <div id="report-new" class="tabPanel">
+        <form id="reportForm" class="card" onsubmit="submitReport(); return false;">
+          <label for="rType">Issue Type</label>
+          <select id="rType" onchange="onReportTypeChange()">
+            <option value="">Select type</option>
+            <option>Harassment</option>
+            <option>Theft</option>
+            <option>Unsafe / poorly lit area</option>
+            <option>Maintenance hazard</option>
+            <option>Medical emergency</option>
+            <option>Ragging</option>
+            <option>Lost Item</option>
+            <option>Found Item</option>
+            <option>Other</option>
+          </select>
+
+          <label for="rLocation">Location</label>
+          <input type="text" id="rLocation" placeholder="e.g. Block C, near library">
+
+          <label for="rDate">Date</label>
+          <input type="date" id="rDate">
+
+          <label for="rDesc">Description</label>
+          <textarea id="rDesc" placeholder="What happened? (for Lost/Found: describe the item)"></textarea>
+
+          <div id="rContactField" style="display:none;">
+            <label for="rContact">Your contact info (so someone can reach you about this item)</label>
+            <input type="text" id="rContact" placeholder="Phone or email">
+          </div>
+
+          <button type="submit" class="mainBtn">Submit Report</button>
+        </form>
+        <div id="reportAssistance" class="card assistanceBox" style="display:none;"></div>
+      </div>
+
+      <div id="report-mine" class="tabPanel" style="display:none;">
+        <input type="text" id="reportSearch" placeholder="Search your reports..." onkeyup="renderReports()">
+        <div id="reportsList"></div>
+      </div>
+    </div>
+
+    <!-- ================= ANONYMOUS FEEDBACK ================= -->
+    <div id="page-feedback" class="page" style="display:none;">
+      <h2>Anonymous Feedback</h2>
+      <p class="pageDesc">No personal details are collected here, and it's not linked to your account - unlike Report an Issue, you won't be able to track a status update on this later.</p>
+
+      <form class="card" onsubmit="submitFeedback(); return false;">
+        <label for="fbCategory">Category</label>
+        <select id="fbCategory">
+          <option value="">Select category</option>
+          <option>Harassment</option>
+          <option>Unsafe area</option>
+          <option>Ragging</option>
+          <option>Other concern</option>
+        </select>
+
+        <label for="fbLocation">Location (optional)</label>
+        <input type="text" id="fbLocation" placeholder="Where did this happen?">
+
+        <label for="fbDesc">Describe the issue</label>
+        <textarea id="fbDesc" placeholder="Your identity is not recorded"></textarea>
+
+        <button type="submit" class="mainBtn">Submit Anonymously</button>
+      </form>
+      <div id="feedbackAssistance" class="card assistanceBox" style="display:none;"></div>
+
+      <h3 class="sectionTitle">Submitted Feedback</h3>
+      <div id="feedbackList"></div>
+    </div>
+
+    <!-- ================= INSIGHTS / ANALYTICS ================= -->
+    <div id="page-analytics" class="page" style="display:none;">
+      <h2>My Private Insights</h2>
+      <p class="pageDesc">Only visible to you. Based on data stored on this device.</p>
+
+      <h3 class="sectionTitle">Mood Trend</h3>
+      <div id="moodChart" class="card"></div>
+
+      <h3 class="sectionTitle">Issue Types Reported</h3>
+      <div id="issueChart" class="card"></div>
+    </div>
+
+    <!-- ================= ATTENDANCE & TIMETABLE ================= -->
+    <div id="page-attendance" class="page" style="display:none;">
+      <div class="campusHero attendanceHero">
+        <div>
+          <span class="campusBadge">SMART STUDENT DASHBOARD</span>
+          <h2>📊 Attendance &amp; Timetable</h2>
+          <p>Individual virtual student data for BCA, BBA and B.Com — different years, classes, timetables and attendance.</p>
+        </div>
+      </div>
+      <div class="card attendanceControls">
+        <div class="loggedStudentBanner">
+          <div><span class="campusBadge">LOGGED-IN STUDENT</span><h3 id="loggedStudentName">Student</h3><p id="loggedStudentMeta" class="pageDesc">Your personal academic dashboard</p></div>
+          <span class="miniBadge">PRIVATE • INDIVIDUAL</span>
+        </div>
+      </div>
+      <div id="studentSummary" class="studentSummaryGrid"></div>
+      <div class="attendanceLayout">
+        <div class="card">
+          <div class="campusSectionHeader"><div><h3>📈 Subject Attendance</h3><p class="pageDesc">Attendance belongs to the selected student, not the whole class.</p></div><span class="miniBadge">INDIVIDUAL</span></div>
+          <div id="attendanceBars" class="attendanceBars"></div>
+        </div>
+        <div class="card">
+          <div class="campusSectionHeader"><div><h3>📊 Attendance Graph</h3><p class="pageDesc">Visual comparison of subject attendance.</p></div></div>
+          <div id="attendanceGraph" class="attendanceGraph"></div>
+        </div>
+      </div>
+      <div class="card timetableCard">
+        <div class="campusSectionHeader"><div><h3>🗓️ Timetable</h3><p class="pageDesc">Your complete weekly timetable. The Today view shows only today's classes.</p></div><span id="timetableClassBadge" class="miniBadge">CLASS</span></div>
+        <div class="timetableTabs"><button id="weekTabBtn" class="outlineBtn active" type="button" onclick="showTimetableView('week')">Full Week</button><button id="todayTabBtn" class="outlineBtn" type="button" onclick="showTimetableView('today')">Today Only</button></div>
+        <div id="weeklyTimetableView" class="tableScroll"><table class="studentTimetable"><thead><tr><th>Time</th><th>Monday</th><th>Tuesday</th><th>Wednesday</th><th>Thursday</th><th>Friday</th></tr></thead><tbody id="timetableBody"></tbody></table></div>
+        <div id="todayTimetableView" style="display:none;">
+          <div id="todayTitle" class="todayTitle"></div>
+          <div id="dailyAttendance" class="dailyAttendanceGrid"></div>
+        </div>
+      </div>
+      <div class="card weeklyAttendanceCard">
+        <div class="campusSectionHeader"><div><h3>📅 Weekly Attendance</h3><p class="pageDesc">Your attendance recorded across the week, hour by hour.</p></div><span class="miniBadge">MY WEEK</span></div>
+        <div id="weeklyAttendance" class="weeklyAttendanceGrid"></div>
+      </div>
+    </div>
+
+    <!-- ================= SMART CAMPUS COMPANION ================= -->
+    <div id="page-campus" class="page" style="display:none;">
+      <div class="campusHero">
+        <div>
+          <span class="campusBadge">SMART CAMPUS</span>
+          <h2>🏫 SecureU Campus Companion</h2>
+          <p>Find places, understand where you are, reach the right person, and learn from senior students.</p>
+        </div>
+      </div>
+
+      <div class="campusSearchCard card">
+        <h3>🔎 Smart Campus Search</h3>
+        <p class="pageDesc">Try “Library”, “Room 305”, “Java”, “HOD” or “Canteen”.</p>
+        <div class="campusSearchRow">
+          <input id="campusSearch" type="text" placeholder="What are you looking for?" oninput="searchCampus()">
+          <button class="mainBtn" style="width:auto;margin:0;" onclick="searchCampus()">Search</button>
+        </div>
+        <div id="campusResults"></div>
+      </div>
+
+      <div class="campusGrid">
+        <div class="card campusActionCard">
+          <span class="campusIcon">📍</span>
+          <h3>Where Am I?</h3>
+          <p>Select your current location and SecureU shows nearby places.</p>
+          <select id="currentCampusLocation" onchange="showNearbyCampus()">
+            <option value="">Select current building / room</option>
+          </select>
+          <div id="nearbyCampus" class="nearbyBox"></div>
+        </div>
+
+        <div class="card campusActionCard">
+          <span class="campusIcon">🤖</span>
+          <h3>Where Should I Go?</h3>
+          <p>Tell SecureU what you need and it finds the right place or person.</p>
+          <input id="goRequest" type="text" placeholder="e.g. I need my Java teacher">
+          <button class="mainBtn" onclick="smartGo()">Find for Me</button>
+          <div id="goResult"></div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ================= SENIOR KNOWLEDGE HUB ================= -->
+    <div id="page-seniors" class="page" style="display:none;">
+      <div class="campusHero">
+        <div>
+          <span class="campusBadge">SENIOR COMPANION</span>
+          <h2>📚 Senior Knowledge Hub</h2>
+          <p>Practical campus knowledge shared by senior students to help you study, navigate and settle in faster.</p>
+        </div>
+      </div>
+      <div class="card">
+        <div class="campusSectionHeader"><div><h3>💡 Student-to-Student Guidance</h3><p class="pageDesc">Tips about academics, campus life, faculty guidance and useful resources.</p></div><span class="miniBadge">STUDENT TIPS</span></div>
+        <div class="hubFilters">
+          <button class="miniFilter active" onclick="filterHub('All', this)">All</button>
+          <button class="miniFilter" onclick="filterHub('Academic', this)">Academic</button>
+          <button class="miniFilter" onclick="filterHub('Campus', this)">Campus</button>
+          <button class="miniFilter" onclick="filterHub('Faculty', this)">Faculty</button>
+          <button class="miniFilter" onclick="filterHub('Resources', this)">Resources</button>
+        </div>
+        <div id="knowledgeHubList" class="knowledgeGrid"></div>
+      </div>
+      <div class="card seniorSubmitCard">
+        <h3>➕ Share a Senior Tip</h3>
+        <p class="pageDesc">Add a useful tip for other students. This demo stores the tip on the current device.</p>
+        <input id="seniorTipTitle" type="text" placeholder="Tip title">
+        <select id="seniorTipCategory">
+          <option>Academic</option><option>Campus</option><option>Faculty</option><option>Resources</option>
+        </select>
+        <textarea id="seniorTipText" placeholder="Write a useful tip..."></textarea>
+        <button class="mainBtn" onclick="addSeniorTip()">Share Tip</button>
+      </div>
+    </div>
+
+    <!-- ================= FIRST YEAR MODE ================= -->
+    <div id="page-new-student" class="page" style="display:none;">
+      <div class="campusHero">
+        <div>
+          <span class="campusBadge">FIRST-YEAR MODE</span>
+          <h2>🧑‍🎓 New Student Companion</h2>
+          <p>A simple campus starter kit for students who are still learning their way around.</p>
+        </div>
+      </div>
+      <div class="card newStudentCard">
+        <div class="campusSectionHeader"><div><h3>🎒 Start Here</h3><p class="pageDesc">Everything a first-year student commonly needs during the first few days and weeks.</p></div></div>
+        <div class="starterGrid">
+          <button onclick="newStudentAction('places')">🗺️<strong>Important Places</strong><span>Find library, offices, labs and canteen.</span></button>
+          <button onclick="newStudentAction('faculty')">👨‍🏫<strong>Meet Faculty</strong><span>Find teachers and their rooms.</span></button>
+          <button onclick="newStudentAction('rules')">📋<strong>Campus Basics</strong><span>Quick rules and everyday guidance.</span></button>
+          <button onclick="newStudentAction('week')">🎒<strong>First-Week Guide</strong><span>Know what to do during your first week.</span></button>
+          <button onclick="newStudentAction('help')">❓<strong>Ask SecureU</strong><span>Find the right place for a common question.</span></button>
+          <button onclick="newStudentAction('emergency')">🆘<strong>Emergency Help</strong><span>Open emergency contacts quickly.</span></button>
+        </div>
+        <div id="newStudentResult" class="starterResult"></div>
+      </div>
+      <div class="card">
+        <h3>🧭 Need a Place?</h3>
+        <p class="pageDesc">Use the connected Campus Navigator to search rooms, faculty, departments and facilities.</p>
+        <button class="mainBtn" onclick="showPage('page-campus')">Open Campus Navigator</button>
+      </div>
+      <div class="card">
+        <h3>📚 Learn From Seniors</h3>
+        <p class="pageDesc">Open the Senior Knowledge Hub for practical academic and campus tips.</p>
+        <button class="outlineBtn" onclick="showPage('page-seniors')">Open Senior Hub</button>
+      </div>
+    </div>
+
+    <!-- ================= PROFILE / SETTINGS ================= -->
+    <div id="page-profile" class="page" style="display:none;">
+      <h2>My Profile &amp; Settings</h2>
+
+      <div class="card">
+        <h3 class="sectionTitle">Student Profile (stored only on this device)</h3>
+        <label for="pName">Name</label>
+        <input type="text" id="pName">
+
+        <label for="pBlood">Blood group</label>
+        <input type="text" id="pBlood" placeholder="e.g. O+">
+
+        <label for="pAllergies">Allergies</label>
+        <input type="text" id="pAllergies" placeholder="e.g. Peanuts, Penicillin">
+
+        <label for="pEmergencyContact">Emergency contact number</label>
+        <input type="tel" id="pEmergencyContact" placeholder="+91...">
+
+        <label for="pSecurityNum">Campus security number</label>
+        <input type="tel" id="pSecurityNum" placeholder="Your campus's real number">
+
+        <label for="pCounsellorNum">Student counsellor number</label>
+        <input type="tel" id="pCounsellorNum" placeholder="Your campus's real number">
+
+        <button class="mainBtn" onclick="saveProfile()">Save Profile</button>
+      </div>
+
+      <div class="card">
+        <h3 class="sectionTitle">Accessibility</h3>
+
+        <label>Text size</label>
+        <div class="segRow">
+          <button onclick="setFontSize('16px')">Normal</button>
+          <button onclick="setFontSize('19px')">Large</button>
+          <button onclick="setFontSize('23px')">Extra Large</button>
+        </div>
+
+        <label class="checkboxLabel">
+          <input type="checkbox" id="contrastCheck" onchange="toggleContrast()"> High contrast mode
+        </label>
+
+        <label class="checkboxLabel">
+          <input type="checkbox" id="motionCheck" onchange="toggleReducedMotion()"> Reduce animations
+        </label>
+      </div>
+
+      <div class="card">
+        <h3 class="sectionTitle">Emergency Alert History</h3>
+        <p class="pageDesc">A record of every time you prepared an SOS message.</p>
+        <div id="alertsList"></div>
+      </div>
+
+      <div class="card">
+        <h3 class="sectionTitle">Data</h3>
+        <p class="pageDesc">All your data is stored only on this device (localStorage). Nothing is uploaded anywhere.</p>
+        <button class="mainBtn dangerBtn" onclick="eraseMyData()">Erase all my data</button>
+      </div>
+
+      <p class="pageDesc mt-1" style="text-align:center;">📱 To install: use "Add to Home Screen" from your browser's share/menu button.</p>
+    </div>
+
+  </main>
+
+  <footer class="appFooter">
+    <p>SecureU &copy; 2026 &middot; All data stays on this device &middot; Not a replacement for emergency services</p>
+  </footer>
+</div>
+
+<!-- ======================= PANIC MODE OVERLAY ======================= -->
+<div id="panicOverlay">
+  <div class="panicTop">
+    <h2>Emergency</h2>
+    <button class="closeBtn" onclick="hidePanic()" aria-label="Close panic mode">✕</button>
+  </div>
+  <div class="panicGrid">
+    <a class="panicBtn secBtn" id="panicSecurityLink" href="tel:100">🛡️<br>Security</a>
+    <a class="panicBtn ambBtn" href="tel:108">🚑<br>Ambulance</a>
+    <a class="panicBtn policeBtn" href="tel:100">👮<br>Police</a>
+    <a class="panicBtn fireBtn" href="tel:101">🔥<br>Fire</a>
+  </div>
+  <button class="sosBigBtn" onclick="prepareSOS()">🆘 PREPARE SOS MESSAGE</button>
+  <p class="panicNote">Pressing SOS will try to get your location (with your permission) and save a record with the time.</p>
+</div>
+
+<!-- ======================= HELP CHATBOT ======================= -->
+<button id="chatFab" onclick="toggleChatbot()" aria-label="Open help chatbot" style="display:none;">💬</button>
+
+<div id="chatPanel" style="display:none;">
+  <div class="chatHeader">
+    <span>🤖 SecureU Helper</span>
+    <button class="closeBtn" onclick="toggleChatbot()" aria-label="Close chatbot">✕</button>
+  </div>
+
+  <div id="chatMessages"></div>
+
+  <div class="chatSuggestions" id="chatSuggestions">
+    <button onclick="askChatbot('What is Panic Mode?')">Panic Mode?</button>
+    <button onclick="askChatbot('How is my data stored?')">Data storage?</button>
+    <button onclick="askChatbot('What is anonymous feedback?')">Anonymous feedback?</button>
+    <button onclick="askChatbot('How does check-in work?')">Check-in?</button>
+  </div>
+
+  <div class="chatInputRow">
+    <input type="text" id="chatInput" placeholder="Ask about any feature..." onkeydown="if(event.key==='Enter'){sendChatMessage();}">
+    <button class="mainBtn" style="width:auto;margin:0;" onclick="sendChatMessage()">Send</button>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
+<script src="firebase-config.js"></script>
+<script src="firebase.js"></script>
+<script src="script.js"></script>
+</body>
+</html>

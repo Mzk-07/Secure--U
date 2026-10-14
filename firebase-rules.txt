@@ -1,0 +1,35 @@
+SecureU Firestore Rules
+
+Paste these into Firebase Console -> Firestore Database -> Rules.
+Create an admin account in Firebase Authentication, then create a document at
+/admins/<that-user-UID> (the document can contain {role: "admin"}).
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() { return request.auth != null; }
+    function isAdmin() {
+      return signedIn() && exists(/databases/$(database)/documents/admins/$(request.auth.uid));
+    }
+
+    match /profiles/{uid} {
+      allow read, write: if signedIn() && request.auth.uid == uid;
+      allow read: if isAdmin();
+    }
+
+    match /reports/{reportId} {
+      allow create: if signedIn() && request.resource.data.uid == request.auth.uid;
+      allow read, update, delete: if isAdmin() || (signedIn() && resource.data.uid == request.auth.uid);
+    }
+
+    match /feedback/{feedbackId} {
+      allow create: if signedIn();
+      allow read: if isAdmin();
+    }
+
+    match /admins/{uid} {
+      allow read: if signedIn() && (request.auth.uid == uid || isAdmin());
+      allow write: if false;
+    }
+  }
+}
